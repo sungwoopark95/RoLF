@@ -2,7 +2,6 @@ from cfg import get_cfg
 from models import *
 from util import *
 
-# MOTHER_PATH = "/home/sungwoopark/bandit-research/rolf"
 MOTHER_PATH = "."
 
 DIST_DICT = {
@@ -35,7 +34,6 @@ def run_trials(agent_type:str, trials:int, horizon:int, k:int, d:int, arms:int, 
     #                     cov_dist=cfg.feat_cov_dist, bound=cfg.feat_feature_bound, bound_method=cfg.feat_bound_method, 
     #                     bound_type=cfg.feat_bound_type, uniform_rng=cfg.feat_uniform_rng, random_state=random_state_) # (K, k)
     np.random.seed(random_state)
-    # rho_sq = cfg.rho_sq
     V = np.eye(arms)
     Z = np.random.multivariate_normal(mean=np.zeros(arms), cov=V, size=k)   # (k, K)
     X = Z[:d, :]    # (d, K)
@@ -178,7 +176,6 @@ if __name__ == "__main__":
     d = cfg.dim
     T = cfg.horizon
     SEED = cfg.seed
-    # AGENTS = ["rolf_lasso", "rolf_ridge", "dr_lasso", "linucb", "lints", "mab_ucb"]
     AGENTS = ["rolf_ridge", "rolf_lasso", "dr_lasso", "linucb", "lints", "mab_ucb"]
 
     RESULT_PATH = f"{MOTHER_PATH}/results/seed_{cfg.seed}_p_{cfg.p}_std_{cfg.reward_std}"
