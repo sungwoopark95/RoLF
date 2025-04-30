@@ -9,6 +9,7 @@ def get_cfg():
     parser.add_argument("--init_explore", type=str, choices=["quad", "triple", "sqr", "K", "double"], default=None)
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--trials", type=int, default=5)
+    parser.add_argument("--case", type=int)
 
     parser.add_argument("--arms", "-N", type=int, default=20)
     parser.add_argument("--latent_dim", "-l", type=int, default=10)
@@ -39,8 +40,10 @@ def get_cfg():
     parser.add_argument("--param_uniform_rng", "-PUR", type=float, default=None, nargs=2)
     parser.add_argument("--param_disjoint", action="store_true")
     
+    parser.add_argument("--save_param", action="store_true")
     parser.add_argument("--filetype", type=str, choices=["pickle", "json"], default="pickle")
     parser.add_argument("--delta", type=float, default=0.1)
     parser.add_argument("--p", type=float, default=0.5)
+    parser.add_argument("--date", type=str, default=None)
     
     return parser.parse_args()

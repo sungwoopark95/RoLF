@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm.auto import tqdm
 from datetime import datetime
+from concurrent.futures import ProcessPoolExecutor
 
 def generate_uniform(dim:Union[int, tuple], uniform_rng:list=None):
     ## Generates a given dimension of random vector that where each element follows the uniform distribution in a given range
@@ -207,16 +208,16 @@ def bounding(type:str, v:np.ndarray, bound:float, method:str=None, norm_type:str
     return v
 
 
-def feature_sampler(dimension:int, feat_dist:str, size:int, disjoint:bool, cov_dist:str=None, bound:float=None,
+def sample_matrix(dimension:int, distribution:str, size:int, disjoint:bool, cov_dist:str=None, bound:float=None,
                     bound_method:str=None, bound_type:str=None, uniform_rng:list=None, random_state:int=None):
     ## Function to sample a feature matrix
-    assert feat_dist.lower() in ["gaussian", "uniform"], "Feature distribution must be either 'gaussian' or 'uniform'."
+    assert distribution.lower() in ["gaussian", "uniform"], "Feature distribution must be either 'gaussian' or 'uniform'."
     if random_state:
         np.random.seed(random_state)
 
     if disjoint:
-        if feat_dist.lower() == "gaussian":
-            assert uniform_rng is None, f"If the distribution is {feat_dist}, variable range is not required."
+        if distribution.lower() == "gaussian":
+            assert uniform_rng is None, f"If the distribution is {distribution}, variable range is not required."
             ## gaussian
             variances = np.ones(dimension)
             cov = covariance_generator(d=dimension, independent=True, variances=variances)
@@ -226,7 +227,7 @@ def feature_sampler(dimension:int, feat_dist:str, size:int, disjoint:bool, cov_d
             feat = generate_uniform(dim=(size, dimension), uniform_rng=uniform_rng)
     else:
         assert cov_dist is not None, f"If 'disjoint' is set to {disjoint}, it is required to specify the distribution to sample the covariance matrix."
-        if feat_dist.lower() == "gaussian":
+        if distribution.lower() == "gaussian":
             ## gaussian
             cov = covariance_generator(d=dimension, independent=False, distribution=cov_dist)
             feat = np.random.multivariate_normal(mean=np.zeros(dimension), cov=cov, size=size)
@@ -325,14 +326,21 @@ def save_result(result:dict, path:str, fname:str, filetype:str):
     print("Result is Saved Completely!")
 
 
+def save_log(path:str, fname:str, string:str):
+    os.makedirs(path, exist_ok=True)
+    with open(f"{path}/{fname}.log", "a") as f:
+        f.write(f"{string}\n")
+
+
 def orthogonal_complement_basis(X):
     d, K = X.shape
-    
     # Perform Singular Value Decomposition
     _, _, Vt = np.linalg.svd(X)
 
     # Find the rank of X to determine the number of non-zero singular values
     rank = np.linalg.matrix_rank(X)
+    # print(f"X.shape called in orthogonal complement basis : {X.shape}")
+    # print(f"rank(X) : {rank}")
 
     # The basis for the null space (orthogonal complement of the row space)
     # is given by the columns of V corresponding to zero singular values
@@ -342,3 +350,9 @@ def orthogonal_complement_basis(X):
         null_space_basis = Vt.T
 
     return null_space_basis
+
+
+def matrix_sqrt(A:np.ndarray):
+    U, S, _ = np.linalg.svd(A)
+    sqrt_S = np.diag(np.sqrt(S))
+    return U @ sqrt_S @ U.T
